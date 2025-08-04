@@ -1,86 +1,60 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>¿A Quién Le Toca?</title>
+  <meta charset="UTF-8">
+  <title>Rotación de Turnos</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-      color: #1a202c;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #121212;
+      color: #FFA500;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
-    .card {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-      padding: 2rem;
-      text-align: center;
-      width: 90%;
-      max-width: 400px;
+      padding: 40px;
     }
     h1 {
-      font-size: 1.75rem;
-      margin-bottom: 1rem;
+      margin-bottom: 20px;
     }
-    input[type="date"] {
-      padding: 0.5rem;
-      font-size: 1rem;
-      border: 1px solid #cbd5e0;
-      border-radius: 8px;
-      width: 100%;
-      margin-bottom: 1rem;
-    }
-    button {
-      padding: 0.5rem 1rem;
-      background-color: #4f46e5;
+    .turno-box {
+      background: linear-gradient(to right, #ff8800, #ff5500);
+      padding: 20px;
+      border-radius: 10px;
       color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.2s ease-in-out;
-    }
-    button:hover {
-      background-color: #4338ca;
-    }
-    .resultado {
-      margin-top: 1.5rem;
-      font-size: 1.25rem;
-      font-weight: bold;
+      font-size: 1.2em;
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <p style="font-size: 0.9rem; color: #4a5568; margin-bottom: 1rem;">↺ El orden de turnos es: <strong>Marina → Horacio → Fernando</strong>. La rotación comienza el 1 de febrero de 2025.</p>
-    <h1>¿A Quién le toca la casa?</h1>
-    <input type="date" id="fechaInput" />
-    <button onclick="calcularTurno()">Consultar</button>
-    <div class="resultado" id="resultado"></div>
-  </div>
+  <h1>Turno Actual</h1>
+  <div class="turno-box" id="resultado"></div>
 
   <script>
-    const baseDate = new Date("2025-02-01");
-    const nombres = ["Marina", "Horacio", "Fernando"];
+    function calcularTurnoActual() {
+      const inicio = new Date(2025, 0, 1); // 1 enero 2025
+      const hoy = new Date();
 
-    function calcularTurno() {
-      const input = document.getElementById("fechaInput").value;
-      if (!input) return;
+      // Ajustar al primer jueves después del 1/1/2025
+      const primerJuevesOffset = (4 - inicio.getDay() + 7) % 7;
+      const primerJueves = new Date(inicio);
+      primerJueves.setDate(inicio.getDate() + primerJuevesOffset);
 
-      const fecha = new Date(input);
-      const diffSemanas = Math.floor((fecha - baseDate) / (7 * 24 * 60 * 60 * 1000));
-      const idx = ((diffSemanas % 3) + 3) % 3;
-      const quien = nombres[idx];
+      const diferencia = hoy - primerJueves;
+      const diasTranscurridos = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+      const numeroTurno = Math.floor(diasTranscurridos / 7) + 1;
 
-      document.getElementById("resultado").innerText = `Le toca a: ${quien}`;
+      // Fecha inicio y fin de semana actual
+      const inicioSemana = new Date(primerJueves);
+      inicioSemana.setDate(primerJueves.getDate() + (numeroTurno - 1) * 7);
+      const finSemana = new Date(inicioSemana);
+      finSemana.setDate(inicioSemana.getDate() + 6);
+
+      const opcionesFecha = { weekday: 'long', day: 'numeric', month: 'long' };
+
+      return `Semana ${numeroTurno}: del ${inicioSemana.toLocaleDateString('es-ES', opcionesFecha)} al ${finSemana.toLocaleDateString('es-ES', opcionesFecha)}`;
     }
+
+    document.getElementById("resultado").textContent = calcularTurnoActual();
   </script>
 </body>
 </html>
