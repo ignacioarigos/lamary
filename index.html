@@ -2,59 +2,128 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Rotación de Turnos</title>
+  <title>Turnos Compartidos</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
       background-color: #121212;
       color: #FFA500;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px;
-    }
-    h1 {
-      margin-bottom: 20px;
-    }
-    .turno-box {
-      background: linear-gradient(to right, #ff8800, #ff5500);
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
       padding: 20px;
-      border-radius: 10px;
+    }
+
+    .header {
+      margin-bottom: 10px;
+    }
+
+    .navigation button {
+      margin: 5px;
+      padding: 5px 10px;
+      background-color: #ff8800;
       color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    table {
+      margin: auto;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      border: 1px solid #FFA500;
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    td:hover {
+      background-color: #ff8800;
+      color: white;
+    }
+
+    .selected {
+      background: linear-gradient(to right, #ff8800, #ff5500);
+      color: white;
+      font-weight: bold;
+    }
+
+    #respuesta {
+      margin-top: 20px;
       font-size: 1.2em;
+      color: #FFF;
     }
   </style>
 </head>
 <body>
-  <h1>Turno Actual</h1>
-  <div class="turno-box" id="resultado"></div>
+  <h1>Calendario de Turnos</h1>
+  <div class="header">
+    <div class="navigation">
+      <button onclick="cambiarMes(-1)">← Mes anterior</button>
+      <span id="mesAnio"></span>
+      <button onclick="cambiarMes(1)">Mes siguiente →</button>
+    </div>
+  </div>
+  <div id="calendario"></div>
+  <div id="respuesta"></div>
 
   <script>
-    function calcularTurnoActual() {
-      const inicio = new Date(2025, 0, 1); // 1 enero 2025
-      const hoy = new Date();
+    const personas = ["Marina", "Horacio", "Fernando"];
+    const inicio = new Date(2025, 0, 1); // 1 de enero 2025
+    let mesActual = new Date().getMonth();
+    let añoActual = new Date().getFullYear();
 
-      // Ajustar al primer jueves después del 1/1/2025
-      const primerJuevesOffset = (4 - inicio.getDay() + 7) % 7;
-      const primerJueves = new Date(inicio);
-      primerJueves.setDate(inicio.getDate() + primerJuevesOffset);
+    function generarCalendario(mes, año) {
+      const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+      const primerDia = new Date(año, mes, 1);
+      const ultimoDia = new Date(año, mes + 1, 0);
+      const diasMes = ultimoDia.getDate();
 
-      const diferencia = hoy - primerJueves;
-      const diasTranscurridos = Math.floor(diferencia / (1000 * 60 * 60 * 24));
-      const numeroTurno = Math.floor(diasTranscurridos / 7) + 1;
+      let html = '<table><tr>' + diasSemana.map(d => `<th>${d}</th>`).join('') + '</tr><tr>';
+      let diaSemana = primerDia.getDay();
 
-      // Fecha inicio y fin de semana actual
-      const inicioSemana = new Date(primerJueves);
-      inicioSemana.setDate(primerJueves.getDate() + (numeroTurno - 1) * 7);
-      const finSemana = new Date(inicioSemana);
-      finSemana.setDate(inicioSemana.getDate() + 6);
+      for (let i = 0; i < diaSemana; i++) html += '<td></td>';
 
-      const opcionesFecha = { weekday: 'long', day: 'numeric', month: 'long' };
+      for (let dia = 1; dia <= diasMes; dia++) {
+        const fecha = new Date(año, mes, dia);
+        html += `<td onclick="mostrarResponsable(new Date(${año}, ${mes}, ${dia}), this)">${dia}</td>`;
+        if ((dia + diaSemana) % 7 === 0) html += '</tr><tr>';
+      }
 
-      return `Semana ${numeroTurno}: del ${inicioSemana.toLocaleDateString('es-ES', opcionesFecha)} al ${finSemana.toLocaleDateString('es-ES', opcionesFecha)}`;
+      html += '</tr></table>';
+      document.getElementById('calendario').innerHTML = html;
+      document.getElementById('mesAnio').textContent = `${primerDia.toLocaleString('es-ES', { month: 'long' })} ${año}`;
     }
 
-    document.getElementById("resultado").textContent = calcularTurnoActual();
+    function mostrarResponsable(fecha, celda) {
+      const primerJueves = new Date(inicio);
+      primerJueves.setDate(inicio.getDate() + ((4 - inicio.getDay() + 7) % 7)); // primer jueves
+
+      const diasTranscurridos = Math.floor((fecha - primerJueves) / (1000 * 60 * 60 * 24));
+      const semanas = Math.floor(diasTranscurridos / 7);
+      const responsable = personas[((semanas % personas.length) + personas.length) % personas.length];
+
+      document.getElementById('respuesta').textContent = `El ${fecha.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} le corresponde a ${responsable}`;
+
+      document.querySelectorAll("td").forEach(td => td.classList.remove("selected"));
+      celda.classList.add("selected");
+    }
+
+    function cambiarMes(valor) {
+      mesActual += valor;
+      if (mesActual < 0) {
+        mesActual = 11;
+        añoActual -= 1;
+      } else if (mesActual > 11) {
+        mesActual = 0;
+        añoActual += 1;
+      }
+      generarCalendario(mesActual, añoActual);
+    }
+
+    generarCalendario(mesActual, añoActual);
   </script>
 </body>
 </html>
