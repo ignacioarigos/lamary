@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Turnos Compartidos</title>
+  <title>Quinta "La Mary"</title>
   <style>
     body {
       background-color: #e0ecf3;
@@ -64,7 +64,7 @@
   </style>
 </head>
 <body>
-  <h1>Calendario de Turnos</h1>
+  <h1>Quinta "La Mary"</h1>
   <div class="navigation">
     <button onclick="cambiarMes(-1)">← Mes anterior</button>
     <span id="mesAnio"></span>
@@ -75,8 +75,8 @@
 
   <script>
     const personas = ["Horacio", "Fernando", "Marina"];
-    const inicioEspecial = new Date(2025, 0, 1); // miércoles 1/1/2025
-    const primerJueves = new Date(2025, 0, 2); // jueves 2/1/2025
+    const inicioEspecial = new Date(2025, 0, 1);
+    const primerJueves = new Date(2025, 0, 2);
     let mesActual = new Date().getMonth();
     let añoActual = new Date().getFullYear();
 
@@ -115,10 +115,38 @@
       }
 
       const colores = {
-        "Horacio": "#81c784",
+        "Horacio": "#6aa84f",
         "Fernando": "#ffb74d",
-        "Marina": "#64b5f6"
+        "Marina": "#ba68c8"
       };
+
+      // Calcular el inicio del turno (jueves)
+      let inicioTurno = new Date(fecha);
+      while (inicioTurno.getDay() !== 4) {
+        inicioTurno.setDate(inicioTurno.getDate() - 1);
+      }
+
+      // Fin del turno es miércoles siguiente
+      let finTurno = new Date(inicioTurno);
+      finTurno.setDate(inicioTurno.getDate() + 6);
+
+      // Limpiar selección previa
+      document.querySelectorAll("td").forEach(td => {
+        td.classList.remove("selected");
+        td.style.backgroundColor = "";
+        td.style.color = "";
+      });
+
+      // Marcar días correspondientes al turno completo
+      document.querySelectorAll("td").forEach(td => {
+        const diaTexto = td.textContent;
+        const fechaCelda = new Date(año, mes, parseInt(diaTexto));
+        if (fechaCelda >= inicioTurno && fechaCelda <= finTurno) {
+          td.classList.add("selected");
+          td.style.backgroundColor = colores[turno];
+          td.style.color = "#1a1a1a";
+        }
+      });
 
       document.getElementById('respuesta').textContent =
         `📅 El ${fecha.toLocaleDateString('es-ES', {
@@ -127,16 +155,6 @@
           month: 'long',
           year: 'numeric'
         })} le toca a ${turno}`;
-
-      document.querySelectorAll("td").forEach(td => {
-        td.classList.remove("selected");
-        td.style.backgroundColor = "";
-        td.style.color = "";
-      });
-
-      celda.classList.add("selected");
-      celda.style.backgroundColor = colores[turno];
-      celda.style.color = "#1a1a1a";
     }
 
     function cambiarMes(valor) {
