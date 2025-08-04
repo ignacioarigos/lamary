@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Turnos Copilot</title>
+  <title>Turnos Compartidos</title>
   <style>
     body {
       background-color: #0e1628;
@@ -14,6 +14,7 @@
 
     h1 {
       color: #8ab4f8;
+      margin-bottom: 10px;
     }
 
     .navigation button {
@@ -24,6 +25,7 @@
       border: none;
       border-radius: 6px;
       cursor: pointer;
+      font-weight: bold;
     }
 
     table {
@@ -55,6 +57,12 @@
       margin-top: 20px;
       font-size: 1.2em;
     }
+
+    #mesAnio {
+      font-size: 1.1em;
+      font-weight: bold;
+      margin: 0 10px;
+    }
   </style>
 </head>
 <body>
@@ -68,41 +76,47 @@
   <div id="respuesta"></div>
 
   <script>
-    const personas = ["Marina", "Horacio", "Fernando"];
-    const inicioRotacion = new Date(2025, 0, 2); // Primer jueves de rotación
+    const personas = ["Horacio", "Fernando", "Marina"];
+    const inicio = new Date(2025, 0, 1); // 1/1/2025
     let mesActual = new Date().getMonth();
     let añoActual = new Date().getFullYear();
 
     function generarCalendario(mes, año) {
       const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-      const primerDia = new Date(año, mes, 1);
-      const ultimoDia = new Date(año, mes + 1, 0);
-      const diasMes = ultimoDia.getDate();
+      const primerDiaMes = new Date(año, mes, 1);
+      const ultimoDiaMes = new Date(año, mes + 1, 0);
+      const diasMes = ultimoDiaMes.getDate();
 
       let html = '<table><tr>' + diasSemana.map(d => `<th>${d}</th>`).join('') + '</tr><tr>';
-      let diaSemana = primerDia.getDay();
+      let diaSemana = primerDiaMes.getDay();
 
       for (let i = 0; i < diaSemana; i++) html += '<td></td>';
 
       for (let dia = 1; dia <= diasMes; dia++) {
-        html += `<td onclick="mostrarResponsable(${año}, ${mes}, ${dia}, this)">${dia}</td>`;
+        html += `<td onclick="mostrarTurno(${año}, ${mes}, ${dia}, this)">${dia}</td>`;
         if ((dia + diaSemana) % 7 === 0) html += '</tr><tr>';
       }
 
       html += '</tr></table>';
       document.getElementById('calendario').innerHTML = html;
-      document.getElementById('mesAnio').textContent = `${primerDia.toLocaleString('es-ES', { month: 'long' })} ${año}`;
+      document.getElementById('mesAnio').textContent = `${primerDiaMes.toLocaleDateString('es-ES', { month: 'long' })} ${año}`;
     }
 
-    function mostrarResponsable(año, mes, dia, celda) {
-      const fechaSeleccionada = new Date(año, mes, dia);
-      const diasDesdeInicio = Math.floor((fechaSeleccionada - inicioRotacion) / (1000 * 60 * 60 * 24));
-      const semanasTranscurridas = Math.floor(diasDesdeInicio / 7);
-      const responsableIndex = ((semanasTranscurridas % 3) + 1) % 3; // +1 para saltar Marina que fue el 1/1
-      const responsable = personas[responsableIndex];
+    function mostrarTurno(año, mes, dia, celda) {
+      const fecha = new Date(año, mes, dia);
+      let turno;
+
+      if (fecha.toDateString() === new Date(2025, 0, 1).toDateString()) {
+        turno = "Horacio"; // Día especial de inicio
+      } else {
+        const primerJueves = new Date(2025, 0, 2); // jueves 2/1/2025
+        const dias = Math.floor((fecha - primerJueves) / (1000 * 60 * 60 * 24));
+        const semanasTranscurridas = Math.floor(dias / 7);
+        turno = personas[(semanasTranscurridas + 1) % 3]; // +1 porque después de Horacio vino Fernando
+      }
 
       document.getElementById('respuesta').textContent =
-        `📅 ${fechaSeleccionada.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} → Le toca a ${responsable}`;
+        `📅 El ${fecha.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} le toca a ${turno}`;
 
       document.querySelectorAll("td").forEach(td => td.classList.remove("selected"));
       celda.classList.add("selected");
