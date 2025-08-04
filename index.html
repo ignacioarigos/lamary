@@ -74,9 +74,9 @@
   <div id="respuesta"></div>
 
   <script>
-    const personas = ["Horacio", "Fernando", "Marina"];
-    const inicioEspecial = new Date(2025, 0, 1);
-    const primerJueves = new Date(2025, 0, 2);
+    const ordenRotacion = ["Fernando", "Marina", "Horacio"];
+    const inicioEspecial = new Date(2025, 0, 1); // miércoles 1/1/2025
+    const primerJueves = new Date(2025, 0, 2); // jueves 2/1/2025
     let mesActual = new Date().getMonth();
     let añoActual = new Date().getFullYear();
 
@@ -111,7 +111,7 @@
       } else {
         const dias = Math.floor((fecha - primerJueves) / (1000 * 60 * 60 * 24));
         const semanasTranscurridas = Math.floor(dias / 7);
-        turno = personas[semanasTranscurridas % 3];
+        turno = ordenRotacion[semanasTranscurridas % 3];
       }
 
       const colores = {
@@ -120,24 +120,21 @@
         "Marina": "#ba68c8"
       };
 
-      // Calcular el inicio del turno (jueves)
+      // Calcular inicio del turno (jueves)
       let inicioTurno = new Date(fecha);
       while (inicioTurno.getDay() !== 4) {
         inicioTurno.setDate(inicioTurno.getDate() - 1);
       }
 
-      // Fin del turno es miércoles siguiente
       let finTurno = new Date(inicioTurno);
       finTurno.setDate(inicioTurno.getDate() + 6);
 
-      // Limpiar selección previa
       document.querySelectorAll("td").forEach(td => {
         td.classList.remove("selected");
         td.style.backgroundColor = "";
         td.style.color = "";
       });
 
-      // Marcar días correspondientes al turno completo
       document.querySelectorAll("td").forEach(td => {
         const diaTexto = td.textContent;
         const fechaCelda = new Date(año, mes, parseInt(diaTexto));
